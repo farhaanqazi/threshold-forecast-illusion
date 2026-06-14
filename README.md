@@ -1,103 +1,66 @@
 # Threshold Forecast Illusion
 
-Threshold Forecast Illusion is a research-oriented repository for studying whether thresholded
-NHS waiting-list outcomes can appear highly predictable even when the underlying level series
-are near-random-walk processes. The project combines a reproducible data pipeline,
-time-based forecasting experiments, and honest persistence baselines around breach-risk
-prediction.
+Threshold Forecast Illusion is a research repository dedicated to proving and measuring a fundamental time-series classification phenomenon: **thresholded outcomes derived from highly autocorrelated level series can appear highly predictable, even when the model possesses no genuine foresight.** 
+
+This project transitions from an initial empirical observation on NHS waiting lists to a formal mathematical theorem, confirmed via synthetic simulation and replicated across multiple domains.
 
 > **License:** MIT · **Python:** 3.12
 
 ---
 
-## Research question
+## The Theorem
 
-NHS hospitals must keep at least 92% of patients within the 18-week RTT standard. This project
-uses monthly public waiting-list extracts to examine a specific methodological question:
+If a continuous level series $X_t$ follows a near-random-walk (or a highly persistent AR(1) process) with lag-1 autocorrelation $\rho$, and we attempt to classify a binary breach state $Y_t$ (where $Y_t = 1$ if $X_t \ge \tau$), a trivial persistence classifier (using only the lagged level $X_{t-1}$ as a score) will achieve a ROC AUC of exactly:
 
-- can a binary breach indicator appear highly predictable even when the underlying level series
-  are persistence-dominated?
-- how much of the observed signal comes from label persistence rather than genuine forecasting
-  skill?
+$$ \text{AUC} = \frac{1}{2} + \frac{2}{\pi} \arcsin\left(\frac{\rho}{\sqrt{2}}\right) $$
 
-The work is organised around careful comparisons between forecasting models and simple
-persistence baselines, with particular attention to transition cases and thresholded outcomes.
+For a non-stationary random walk ($\rho \approx 1$), the AUC collapses to $\approx 0.99$. Complex machine learning models deployed on such tasks often report astronomical AUCs, masking the reality that they are merely memorizing the current level. We call this the **Threshold Forecast Illusion**.
 
 ---
 
-## Project overview
+## Project Structure & Roadmap
 
-The repository follows a practical workflow:
+The research is executed in three distinct phases:
 
-1. ingest and clean public NHS RTT extracts,
-2. build a consistent analysis grain at provider × specialty × month,
-3. engineer features and train forecasting/classification models,
-4. compare results against persistence baselines,
-5. reproduce the analysis through notebooks and tests.
+### Phase 1: Numerical Validation (Flagship)
+- **Synthetic Simulation Engine:** A stationary AR(1) generator sweeps $\phi$ from 0.5 to 0.99.
+- **Confirmation:** The empirical AUC of the persistence classifier is strictly matched against the analytic curve, confirming the mathematical proof within tight statistical tolerances.
 
-Supporting design notes are documented in [architecture.md](architecture.md).
+### Phase 2: Corrective Metrics
+To expose the illusion in real-world models, we implement two distinct corrective metrics:
+- **Full-Set Forecast Value Added (FVA):** Evaluates whether a complex model adds any skill over the trivial persistence baseline on the full dataset ($\text{FVA} \approx 0$ means no true foresight).
+- **Transition-Subset AUC:** Evaluates model accuracy exclusively on timesteps where the label flips ($Y_t \neq Y_{t-1}$). Under the illusion, this diagnostic collapses to chance ($\approx 0.5$).
 
-### Data grain
-
-A single row is one **provider (hospital) × treatment-function (specialty) × month**.
-The national figure reconciles end-to-end (e.g. ~7.05M waiting in Mar-2026). Two source
-gotchas are handled explicitly: the `Total` column is empty on detail rows (the total is
-re-derived from the wait-band counts), and the `C_999` treatment function is an
-all-specialties summary line that would double-count if included, so it is excluded.
+### Phase 3: Empirical Generalization
+The illusion is demonstrated on real-world datasets that fit the structural requirement (a continuous drifting quantity against a fixed policy cutoff).
+- **Domain A (Healthcare):** Public NHS RTT waiting-list extracts (the original empirical pipeline).
+- **Domain B (Environment):** Air Quality (PM2.5) indices evaluated against regulatory limits.
 
 ---
 
-## Experimental setup
+## Repository Layout
 
-All models use time-based splits rather than random splits, and each result is compared against
-an honest persistence baseline (next month = this month). A result is only treated as meaningful
-when it improves on that baseline.
-
-| Model | Target | Algorithm | Result |
-|---|---|---|---|
-| **Breach risk** | Will the specialty breach the 18-week standard next month? | XGBoost classifier | **Clear win** — ROC AUC ≈ 0.98; score = P(breach) × 100 |
-| **Demand** | Next month's total waiting list | XGBoost (FVA hybrid) | Persistence-dominated at 1-month horizon → routed champion-challenger holds parity, never worse |
-| **Waiting time** | Next month's % within 18 weeks | XGBoost / LightGBM | Persistence-dominated (MAE parity, marginally better RMSE) |
-
-The key, deliberately reported finding: **level series are near-random-walk at a one-month
-horizon, so they are persistence-dominated, while the binary breach outcome carries strong
-signal.** That contrast — and a Forecast-Value-Added wrapper that guarantees the model is
-never worse than the baseline — is the methodological core of the project.
-
----
-
-## Repository layout
-
-```
+```text
 .
-├── architecture.md          # Notes on the data and modeling workflow
-├── notebooks/               # Reproducible analysis and experiments (run in order 01 → 07)
-│   ├── 01_explore_raw_data.ipynb
-│   ├── 02_unify_extracts.ipynb
-│   ├── 03_feature_engineering.ipynb
-│   ├── 04_demand_model.ipynb
-│   ├── 05_breach_model.ipynb
-│   ├── 06_waiting_time_model.ipynb
-│   └── 07_gold_star_schema.ipynb
-├── src/tfi/                # Shared modeling utilities
-│   ├── modeling.py          # Feature definitions, model constructors, evaluation helpers
-│   └── gold.py              # Gold-layer data utilities
-├── tests/                   # Regression and validation tests
-│   ├── test_models.py
-│   ├── test_calibration_slices.py
-│   └── test_data_validation.py
-├── conftest.py              # Shared fixtures for walk-forward evaluation
-├── docs/
-└── pyproject.toml
+├── implementation_plan.md   # Architectural blueprint and milestones
+├── notebooks/               # Reproducible analysis and experiments
+│   ├── 01_to_07_...         # The NHS Empirical Pipeline (Data extraction to modeling)
+│   ├── 08_validate_theorem.ipynb
+│   ├── 09_transition_metrics.ipynb
+│   └── 10_second_domain_replication.ipynb
+├── src/tfi/                 # Threshold Forecast Illusion core logic
+│   ├── synthetic.py         # AR(1) generator and theoretical validation
+│   ├── modeling.py          # Transition-Subset AUC and Full-Set FVA utilities
+│   └── gold.py              # NHS data handlers
+├── tests/                   # Strict regression and mathematical theorem tests
+│   └── test_synthetic.py    # Gated mathematical validation test
+├── pyproject.toml
+└── README.md
 ```
-
-> **Data is not committed.** `data/` (raw 1.9 GB + derived) is git-ignored; the notebooks
-> regenerate the Silver, feature, and Gold layers from the raw extracts. See
-> [Getting the data](#getting-the-data).
 
 ---
 
-## Setup
+## Setup & Execution
 
 This project uses [uv](https://docs.astral.sh/uv/) and Python 3.12.
 
@@ -106,50 +69,25 @@ uv venv --python 3.12
 uv pip install -e ".[notebooks,dev]"
 ```
 
-Register the Jupyter kernel:
+Register the Jupyter kernel for running the analytical notebooks:
 
 ```bash
-uv run python -m ipykernel install --user --name tfi --display-name "Python (tfi)"
+uv run python -m ipykernel install --user --name tfi --display-name "Python (TFI)"
 ```
 
-### Getting the data
+### Running the Theorem Validation
 
-1. Download the monthly **Consultant-led RTT Waiting Times** CSVs from
-   [NHS England](https://www.england.nhs.uk/statistics/statistical-work-areas/rtt-waiting-times/)
-   (the "Full CSV data file" for each month) into `data/raw/`.
-2. Open the notebooks and run them in order **01 → 07** with the `Python (tfi)` kernel.
-   This rebuilds `data/interim/`, `data/processed/`, and `data/gold/`.
-
----
-
-## Running the tests
+Phase 1 (The Theorem) is gated by a strict mathematical test suite. The test simulates high-volume thresholded AR(1) walks and asserts that the empirical AUC matches the analytic formula within a strict standard-error tolerance.
 
 ```bash
-uv run pytest -q
+uv run pytest tests/test_synthetic.py -s
 ```
 
-The suite trains models on time-based splits and fails the build on: feature leakage, a
-model losing to its persistence baseline, AUC below floor, train/test overfitting,
-miscalibration, per-segment AUC drops, schema violations, or grain duplication.
+### Getting the NHS Empirical Data
 
----
-
-## Outputs
-
-The pipeline writes intermediate and derived data to the local `data/` tree, including parquet
-and SQLite outputs for downstream analysis and reproducibility.
-
-These outputs are intended for inspection, replication, and further experimental work rather than
-for production deployment.
-
----
-
-## Roadmap
-
-- [x] Reproducible data preparation and feature engineering workflow
-- [x] Forecasting experiments with persistence baselines
-- [ ] Additional research analyses around transition subsets and thresholded outcomes
-- [ ] Lightweight reproducibility tooling for rerunning experiments
+To replicate the healthcare domain findings (Notebooks 01 → 07):
+1. Download the monthly **Consultant-led RTT Waiting Times** CSVs from [NHS England](https://www.england.nhs.uk/statistics/statistical-work-areas/rtt-waiting-times/) into `data/raw/`.
+2. Run notebooks **01 → 07** with the `Python (TFI)` kernel.
 
 ---
 
@@ -157,5 +95,4 @@ for production deployment.
 
 This project is licensed under the [MIT License](LICENSE).
 
-Data © NHS England, published under the
-[Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/).
+Data © NHS England, published under the [Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/).
