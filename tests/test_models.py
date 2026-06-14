@@ -4,7 +4,7 @@ Each test encodes a deploy-blocking standard. A failure here means a model must 
 """
 import numpy as np
 
-from hcip import modeling as M
+from tfi import modeling as M
 
 # --- Thresholds (principled, justified against measured performance) ---
 BREACH_MIN_AUC = 0.90          # absolute floor for ranking quality

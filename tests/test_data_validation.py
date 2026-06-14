@@ -8,7 +8,7 @@ try:
 except ImportError:  # older pandera
     import pandera as pa
 
-from hcip import modeling as M
+from tfi import modeling as M
 
 FEATURE_SCHEMA = pa.DataFrameSchema(
     {

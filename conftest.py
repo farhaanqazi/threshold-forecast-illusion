@@ -6,7 +6,7 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 import pytest  # noqa: E402
 
-from hcip import modeling as M  # noqa: E402
+from tfi import modeling as M  # noqa: E402
 
 
 @pytest.fixture(scope="session")

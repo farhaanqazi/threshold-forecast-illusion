@@ -79,7 +79,7 @@ never worse than the baseline — is the methodological core of the project.
 │   ├── 05_breach_model.ipynb
 │   ├── 06_waiting_time_model.ipynb
 │   └── 07_gold_star_schema.ipynb
-├── src/hcip/                # Shared modeling utilities
+├── src/tfi/                # Shared modeling utilities
 │   ├── modeling.py          # Feature definitions, model constructors, evaluation helpers
 │   └── gold.py              # Gold-layer data utilities
 ├── tests/                   # Regression and validation tests
@@ -109,7 +109,7 @@ uv pip install -e ".[notebooks,dev]"
 Register the Jupyter kernel:
 
 ```bash
-uv run python -m ipykernel install --user --name hcip --display-name "Python (HCIP)"
+uv run python -m ipykernel install --user --name tfi --display-name "Python (tfi)"
 ```
 
 ### Getting the data
@@ -117,7 +117,7 @@ uv run python -m ipykernel install --user --name hcip --display-name "Python (HC
 1. Download the monthly **Consultant-led RTT Waiting Times** CSVs from
    [NHS England](https://www.england.nhs.uk/statistics/statistical-work-areas/rtt-waiting-times/)
    (the "Full CSV data file" for each month) into `data/raw/`.
-2. Open the notebooks and run them in order **01 → 07** with the `Python (HCIP)` kernel.
+2. Open the notebooks and run them in order **01 → 07** with the `Python (tfi)` kernel.
    This rebuilds `data/interim/`, `data/processed/`, and `data/gold/`.
 
 ---

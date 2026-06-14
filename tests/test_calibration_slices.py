@@ -6,7 +6,7 @@ holds up within segments, not just on average.
 import pandas as pd
 from sklearn.metrics import roc_auc_score
 
-from hcip import modeling as M
+from tfi import modeling as M
 
 MAX_ECE = 0.05            # expected calibration error
 MAX_BRIER = 0.10          # Brier score
