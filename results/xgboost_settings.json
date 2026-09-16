@@ -1,0 +1,24 @@
+{
+  "max_depth": 5,
+  "learning_rate": 0.05,
+  "n_estimators": 200,
+  "subsample": 0.8,
+  "colsample_bytree": 0.8,
+  "min_child_weight": 1.0,
+  "reg_alpha": 0.0,
+  "reg_lambda": 1.0,
+  "gamma": 0.0,
+  "random_state": 42,
+  "eval_metric": "logloss",
+  "n_trees_in_booster": 200,
+  "n_features": 22,
+  "early_stopping": "not used (no validation set; fixed n_estimators)",
+  "early_stopping_rounds": null,
+  "fit_call": "tfi.modeling.breach_fit_eval -> tfi.modeling.classifier(n_estimators=200)",
+  "train_rows_per_fold": {
+    "2025-11": 67579,
+    "2025-12": 71103,
+    "2026-01": 74649,
+    "2026-02": 78198
+  }
+}

@@ -1,0 +1,53 @@
+check,fold,metric,value,note
+overfitting,2025-11,train_roc_auc,0.9894258745157164,model scored on its own 67579 training rows
+overfitting,2025-11,test_roc_auc,0.979934156834847,3524 test rows; same number as the main run
+overfitting,2025-11,train_minus_test,0.009491717680869427,positive = fits training rows better than test rows
+overfitting,2025-12,train_roc_auc,0.9891458131629224,model scored on its own 71103 training rows
+overfitting,2025-12,test_roc_auc,0.9801116867559039,3546 test rows; same number as the main run
+overfitting,2025-12,train_minus_test,0.009034126407018506,positive = fits training rows better than test rows
+overfitting,2026-01,train_roc_auc,0.9888166160476312,model scored on its own 74649 training rows
+overfitting,2026-01,test_roc_auc,0.981885543324669,3549 test rows; same number as the main run
+overfitting,2026-01,train_minus_test,0.006931072722962117,positive = fits training rows better than test rows
+overfitting,2026-02,train_roc_auc,0.9886416904665777,model scored on its own 78198 training rows
+overfitting,2026-02,test_roc_auc,0.9755901595888177,3553 test rows; same number as the main run
+overfitting,2026-02,train_minus_test,0.01305153087776001,positive = fits training rows better than test rows
+overfitting,pooled,train_minus_test_mean,0.009627111922152515,mean gap across the four folds
+overfitting,pooled,train_minus_test_range,0.006120458154797892,max gap minus min gap across folds
+overfitting,settings,max_depth,5,XGBoost capacity setting used by the main run
+overfitting,settings,learning_rate,0.05,XGBoost capacity setting used by the main run
+overfitting,settings,n_estimators,200,XGBoost capacity setting used by the main run
+overfitting,settings,subsample,0.8,XGBoost capacity setting used by the main run
+overfitting,settings,colsample_bytree,0.8,XGBoost capacity setting used by the main run
+overfitting,settings,min_child_weight,1.0,XGBoost capacity setting used by the main run
+overfitting,settings,reg_alpha,0.0,XGBoost capacity setting used by the main run
+overfitting,settings,reg_lambda,1.0,XGBoost capacity setting used by the main run
+overfitting,settings,gamma,0.0,XGBoost capacity setting used by the main run
+overfitting,settings,random_state,42,XGBoost capacity setting used by the main run
+overfitting,settings,eval_metric,logloss,XGBoost capacity setting used by the main run
+overfitting,settings,n_trees_in_booster,200,XGBoost capacity setting used by the main run
+overfitting,settings,n_features,22,XGBoost capacity setting used by the main run
+overfitting,settings,early_stopping,not used (no validation set; fixed n_estimators),XGBoost capacity setting used by the main run
+leakage,2025-11,rows_recomputed_from_truncated_data,3704,"all 22 features equal stored values (rtol 1e-9, NaN-equal)"
+leakage,2025-12,rows_recomputed_from_truncated_data,3683,"all 22 features equal stored values (rtol 1e-9, NaN-equal)"
+leakage,2026-01,rows_recomputed_from_truncated_data,3674,"all 22 features equal stored values (rtol 1e-9, NaN-equal)"
+leakage,2026-02,rows_recomputed_from_truncated_data,3645,"all 22 features equal stored values (rtol 1e-9, NaN-equal)"
+leakage,pooled,rows_recomputed_from_truncated_data,14706,sum over the four test months; passed
+leakage,pooled,target_is_shift_minus_1_rows,88678,target equals next month's value within each provider-by-specialty series; passed
+leakage,pooled,2026-03_rows_without_target,3636,all rows in the final month (2026-03) have no target; passed
+leakage,pooled,status,passed,features at t use only months <= t; target is month t+1
+current_value_only,2025-11,test_roc_auc,0.9746814859983185,"XGBoost, single feature: current share within 18 weeks"
+current_value_only,2025-12,test_roc_auc,0.9732281950552457,"XGBoost, single feature: current share within 18 weeks"
+current_value_only,2026-01,test_roc_auc,0.973912864694052,"XGBoost, single feature: current share within 18 weeks"
+current_value_only,2026-02,test_roc_auc,0.9696302104470504,"XGBoost, single feature: current share within 18 weeks"
+current_value_only,pooled,roc_auc,0.9724872045733578,"single feature; same folds, seed and settings as the full model"
+current_value_only,pooled,pr_auc,0.9944256137897952,single feature
+current_value_only,pooled,full_model_roc_auc,0.9791374501227748,all 22 features; reference from the same run
+current_value_only,pooled,full_model_pr_auc,0.996203921776862,reference from the same run
+current_value_only,pooled,roc_auc_share_of_full_model_above_chance,0.9861203803883147,(single - 0.5) / (full - 0.5)
+class_imbalance,pooled,positive_rate,0.8467400508044031,breach rate on the pooled test set = PR-AUC no-skill baseline (multi_metric_comparison.csv)
+class_imbalance,pooled,pr_auc_xgboost,0.996203921776862,multi_metric_comparison.csv
+class_imbalance,pooled,pr_auc_binary_persistence,0.9646134521572272,multi_metric_comparison.csv
+class_imbalance,pooled,pr_auc_continuous_persistence,0.9873293511935656,multi_metric_comparison.csv
+class_imbalance,pooled,rebalance_gap_at_rate_0.50,0.0721832854217459,observed minus formula continuous-persistence AUC at an imposed breach rate (balance_sweep.csv)
+class_imbalance,pooled,rebalance_gap_at_rate_0.65,0.0725768269087253,observed minus formula continuous-persistence AUC at an imposed breach rate (balance_sweep.csv)
+class_imbalance,pooled,rebalance_gap_at_rate_0.75,0.0723366707845361,observed minus formula continuous-persistence AUC at an imposed breach rate (balance_sweep.csv)

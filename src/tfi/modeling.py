@@ -54,21 +54,30 @@ def valid_target_months(df: pd.DataFrame, target: str = "target_breach_next") ->
     return sorted(df.dropna(subset=[target])["period_date"].unique())
 
 
-def breach_fit_eval(df: pd.DataFrame, test_month, n_estimators: int = 200) -> dict:
-    """Train breach classifier on all months before `test_month`, evaluate on it."""
+def breach_fit_eval(df: pd.DataFrame, test_month, n_estimators: int = 200,
+                    feature_cols: list[str] | None = None) -> dict:
+    """Train breach classifier on all months before `test_month`, evaluate on it.
+
+    `feature_cols` defaults to FEATURE_COLS; pass a subset to fit a reduced model
+    with otherwise identical settings, split and seed.
+    """
+    cols = list(FEATURE_COLS if feature_cols is None else feature_cols)
     d = df.dropna(subset=["target_breach_next", "pct_within_18wk"]).copy()
     d["y"] = d["target_breach_next"].astype(int)
     tr = d[d["period_date"] < test_month]
     te = d[d["period_date"] == test_month]
-    clf = classifier(n_estimators).fit(tr[FEATURE_COLS], tr["y"])
-    p_tr = clf.predict_proba(tr[FEATURE_COLS])[:, 1]
-    p_te = clf.predict_proba(te[FEATURE_COLS])[:, 1]
+    clf = classifier(n_estimators).fit(tr[cols], tr["y"])
+    p_tr = clf.predict_proba(tr[cols])[:, 1]
+    p_te = clf.predict_proba(te[cols])[:, 1]
     base = (te["pct_within_18wk"] < STANDARD).astype(int).to_numpy()  # breach-persistence baseline
     two_classes = te["y"].nunique() > 1
     diagnostics = breach_ranking_diagnostics(te["y"].to_numpy(), p_te, base, k=50)
     return {
         "test_month": pd.Timestamp(test_month),
         "n_test": len(te),
+        "n_train": len(tr),
+        "clf": clf,
+        "feature_cols": cols,
         "train_auc": roc_auc_score(tr["y"], p_tr),
         "test_auc": roc_auc_score(te["y"], p_te) if two_classes else np.nan,
         "baseline_auc": roc_auc_score(te["y"], base) if two_classes else np.nan,

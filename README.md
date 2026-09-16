@@ -54,11 +54,19 @@ The current empirical study is limited to public NHS England RTT waiting-list ex
 │   ├── persistence_vs_model.csv
 │   ├── theorem_vs_observed.csv
 │   ├── nhs_auc_ci.csv
+│   ├── multi_metric_comparison.csv
+│   ├── model_calibration.csv
 │   ├── balance_sweep.csv
 │   ├── rho_distribution.csv
 │   ├── rho_tercile_gap.csv
 │   ├── synthetic_sweep_extended.csv
-│   └── formula_aggregation.csv
+│   ├── formula_aggregation.csv
+│   ├── pooled_predictions.csv, example_series.csv, breach_transitions.csv, data_sample.csv  # export_figure_inputs.py
+│   └── alternative_checks.csv, xgboost_settings.json                                        # check_alternatives.py
+├── figures/                 # 300 dpi PNGs written by make_figures.py
+├── export_figure_inputs.py  # model-dependent figure inputs -> results/
+├── make_figures.py          # results/ -> figures/
+├── check_alternatives.py    # overfitting, leakage, current-value-only, imbalance checks
 ├── pyproject.toml
 └── README.md
 ```
@@ -93,6 +101,29 @@ uv run pytest tests/test_synthetic.py -s
 To replicate the healthcare domain findings (Notebooks 01 → 07):
 1. Download the monthly **Consultant-led RTT Waiting Times** CSVs from [NHS England](https://www.england.nhs.uk/statistics/statistical-work-areas/rtt-waiting-times/) into `data/raw/`.
 2. Run notebooks **01 → 07** with the `Python (TFI)` kernel.
+
+### Generating Figures and the Alternative-Explanation Checks
+
+Three scripts sit next to the notebooks. They reuse `tfi.modeling` (same model,
+features, seed and walk-forward split as the main run) and read or write only
+under `results/` and `figures/`; no number on a figure is typed into a script.
+
+```bash
+uv run python export_figure_inputs.py   # model-dependent inputs -> results/ (needs data/processed/rtt_features.parquet)
+uv run python make_figures.py           # results/*.csv -> figures/*.png at 300 dpi (no data or model needed)
+uv run python check_alternatives.py     # overfitting / leakage / current-value-only / imbalance -> results/alternative_checks.csv
+```
+
+`make_figures.py` writes the paper's data figures: `fig3_monthly`, `fig4_metrics`,
+`fig5_formula`, `fig6_tests` (Figs 1 and 2 are schematics), plus `fig_example_series`,
+`fig_roc_curves`, `fig_transition_matrix`, `fig_rho_histogram` and `fig_calibration`.
+`export_figure_inputs.py` also writes `results/data_sample.csv`, the six-row data
+sample table. `check_alternatives.py` writes the XGBoost capacity settings it
+actually ran with to `results/xgboost_settings.json` (no early stopping is used).
+
+**Month convention.** Months in `results/` are *feature* months. A row labelled
+`2026-02` holds February 2026 observations and is scored on the March 2026 outcome.
+The data run April 2024 to March 2026; March 2026 supplies labels only.
 
 ### Current NHS Findings
 
